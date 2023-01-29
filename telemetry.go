@@ -1,4 +1,4 @@
-package main
+package telemetry
 
 import (
     "os"
@@ -33,6 +33,16 @@ func GetSpan(ctx context.Context, name string) (context.Context, trace.Span) {
 
 // https://signoz.io/blog/monitoring-your-go-application-with-signoz/#instrumenting-a-sample-golang-app
 func Initialize() func(context.Context) error {
+    if len(ServiceName) == 0 {
+        panic("SERVICE_NAME not set.")
+    }
+    if len(CollectorURL) == 0 {
+        panic("OTEL_EXPORTER_OTLP_ENDPOINT not set.")
+    }
+    if len(Insecure) == 0 {
+        panic("INSECURE_MODE not set.")
+    }
+    
     secureOption := otlptracegrpc.WithTLSCredentials(credentials.NewClientTLSFromCert(nil, ""))
     if len(Insecure) > 0 {
         secureOption = otlptracegrpc.WithInsecure()
@@ -69,8 +79,4 @@ func Initialize() func(context.Context) error {
     )
 
     return exporter.Shutdown
-}
-
-func main() {
-    log.Print("Hello world!")
 }
